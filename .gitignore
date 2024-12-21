@@ -1,2 +1,6 @@
 /my_env
 *.bin
+/data
+/out-apt
+/mps_ftn
+*/__pycache__
