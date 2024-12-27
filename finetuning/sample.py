@@ -9,9 +9,9 @@ init_from ='resume' # resume from an out_dir, or a gpt2 variant (e.g. 'gpt-2')
 out_dir = 'out-apt' # ignored if init_from is not 'resume'
 start = "\n" # or "<|endoftext|>" or etc. Can also specify a file, use as: "FILE:prompt.txt"
 num_samples = 50 # number of samples to draw
-max_new_tokens = 500 # number of tokens generated in each sample
+max_new_tokens = 100 # number of tokens generated in each sample
 temperature = 0.8 # less random < 1 < more random
-top_k = 200 # retain only the top_k most likely tokens, clamp others to have 0 probability
+top_k = 100 # retain only the top_k most likely tokens, clamp others to have 0 probability
 seed = 1337 # random seed for sampling
 if torch.cuda.is_available():
     device = 'cuda'
@@ -57,15 +57,14 @@ if compile:
     model = torch.compile(model) #requires PyTorch 2.0
 
 load_meta = False
-if init_from == 'resume' and 'config' in checkpoint and 'dataset' in checkpoint['config']:
-    meta_path = os.path.join('data', checkpoint['config']['dataset'], 'meta.pkl')
+if init_from == 'resume':
+    meta_path = os.path.join('data', 'one', 'meta.pkl')  # Hardcode to 'one' dataset or modify as needed
     load_meta = os.path.exists(meta_path)
 
 if load_meta:
     print(f"Loading meta from {meta_path}")
     with open(meta_path, 'rb') as f:
         meta = pickle.load(f)
-    #make it more general to arbitrary encoder/decoder schemes
     stoi, itos = meta['stoi'], meta['itos']
     encode = lambda s: [stoi[c] for c in s]
     decode = lambda l: ''.join([itos[i] for i in l])
