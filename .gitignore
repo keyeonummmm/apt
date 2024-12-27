@@ -4,3 +4,6 @@
 /out-apt
 /mps_ftn
 */__pycache__
+/nanogpt
+/small
+test.py
