@@ -13,6 +13,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.distributed import init_process_group, destroy_process_group
 
 from model import GPT
+from train_logger import TrainingLogger
 
 #Model architecture
 class LayerNorm(nn.Module):
@@ -44,8 +45,8 @@ always_save_checkpoint = False
 # Current setup: 32,768 tokens/iter means ~29 iters/epoch
 # Modified for 3-5 epochs of training
 gradient_accumulation_steps = 32
-max_iters = 100 # ~3.5 epochs
-learning_rate = 3e-5 # finetune at constant LR
+max_iters = 300
+learning_rate = 3e-5
 decay_lr = True
 warmup_iters = 50
 lr_decay_iters = 250
@@ -182,7 +183,8 @@ def get_lr(iter_num):
         return min_lr
     # In between, use cosine decay
     decay_ratio = (iter_num - warmup_iters) / (lr_decay_iters - warmup_iters)
-    coeff = 0.5 * (1.0 + math.cos(math.pi * decay_ratio))
+    assert 0 <= decay_ratio <= 1
+    coeff = 0.5 * (1.0 + math.cos(math.pi * decay_ratio)) # coeff ranges 0..1
     return min_lr + coeff * (learning_rate - min_lr)
 
 # Logging
@@ -225,9 +227,11 @@ def save_checkpoint():
     }
     print(f"saving checkpoint to {out_dir}")
     torch.save(checkpoint, os.path.join(out_dir, 'ckpt.pt'))
-    # Also save as latest if it's the best so far
-    if losses['val'] < best_val_loss:
-        torch.save(checkpoint, os.path.join(out_dir, 'best_ckpt.pt'))
+    
+logger = TrainingLogger(
+    log_dir=os.path.join(out_dir, 'logs'),
+    wandb_enabled=wandb_log
+)
 
 # Training loop
 while True:
@@ -238,18 +242,19 @@ while True:
     # evaluate the loss on train/val sets and write checkpoints
     if iter_num % eval_interval == 0 and master_process:
         losses = estimate_loss()
-        print(f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
-        if wandb_log:
-            wandb.log({
-                "iter": iter_num,
-                "train/loss": losses['train'],
-                "val/loss": losses['val'],
-                "lr": lr,
-                "mfu": running_mfu*100,
-            })
+        eval_metrics = {
+            "iter": iter_num,
+            "train_loss": losses['train'],
+            "val_loss": losses['val'],
+            "lr": lr,
+            "mfu": running_mfu*100,
+        }
+        logger.log_step(eval_metrics, step_type="eval", master_process=master_process)
+        
         if losses['val'] < best_val_loss or always_save_checkpoint:
-            best_val_loss = min(best_val_loss, losses['val'])
-            save_checkpoint()
+            best_val_loss = losses['val']
+            if iter_num > 0:
+                save_checkpoint()
 
     if iter_num == 0 and eval_only:
         break
@@ -281,7 +286,15 @@ while True:
         if local_iter_num >= 5:
             mfu = raw_model.estimate_mfu(batch_size * gradient_accumulation_steps, dt)
             running_mfu = mfu if running_mfu == -1.0 else 0.9*running_mfu + 0.1*mfu
-        print(f"iter {iter_num}: loss {lossf:.4f}, time {dt*1000:.2f}ms, mfu {running_mfu*100:.2f}%")
+        
+        training_metrics = {
+            "iter": iter_num,
+            "loss": lossf,
+            "step_time": dt*1000,
+            "lr": lr,
+            "mfu": running_mfu*100,
+        }
+        logger.log_step(training_metrics, step_type="training", master_process=master_process)
     iter_num += 1
     local_iter_num += 1
 
@@ -290,3 +303,6 @@ while True:
 
 if ddp:
     destroy_process_group()
+
+if master_process:
+    logger.plot_training_curves()
