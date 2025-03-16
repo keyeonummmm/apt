@@ -17,15 +17,25 @@ class TrainingLogger:
         self.log_dir = Path(log_dir)
         self.log_dir.mkdir(parents=True, exist_ok=True)
         
-        # Create log file with timestamp
-        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.log_file = self.log_dir / f'training_log_{timestamp}.jsonl'
+        
+        self.log_file = self.log_dir / 'training_log.jsonl'
         
         self.wandb_enabled = wandb_enabled
         if wandb_enabled:
             import wandb
             self.wandb = wandb
     
+    def _convert_tensors(self, obj):
+        """Convert tensors to Python numbers for JSON serialization"""
+        import torch
+        if isinstance(obj, torch.Tensor):
+            return obj.item() if obj.numel() == 1 else obj.tolist()
+        elif isinstance(obj, dict):
+            return {key: self._convert_tensors(value) for key, value in obj.items()}
+        elif isinstance(obj, (list, tuple)):
+            return [self._convert_tensors(x) for x in obj]
+        return obj
+
     def log_step(self, metrics, step_type="training", master_process=True):
         """
         Log a training step
@@ -38,6 +48,9 @@ class TrainingLogger:
         if not master_process:
             return
             
+        # Convert any tensor values to Python types
+        metrics = self._convert_tensors(metrics)
+        
         # Add timestamp and step type
         log_entry = {
             "timestamp": datetime.datetime.now().isoformat(),

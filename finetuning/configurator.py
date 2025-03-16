@@ -1,4 +1,9 @@
 """
+I copy and past this configurator.py file from https://github.com/karpathy/nanoGPT
+Credit here to karpathy for his nanoGPT project and the decent knowledge he shared in his video to the public to help us understand LLM in general, with a better sense of what, how, and why it works.
+"""
+
+"""
 Poor Man's Configurator. Probably a terrible idea. Example usage:
 $ python train.py config/override_file.py --batch_size=32
 this will first run config/override_file.py, then override batch_size to 32

@@ -45,12 +45,12 @@ always_save_checkpoint = False
 # Current setup: 32,768 tokens/iter means ~29 iters/epoch
 # Modified for 3-5 epochs of training
 gradient_accumulation_steps = 32
-max_iters = 300
-learning_rate = 3e-5
+max_iters = 6000
+learning_rate = 6e-4
 decay_lr = True
-warmup_iters = 50
-lr_decay_iters = 250
-min_lr = learning_rate / 10
+warmup_iters = 600
+lr_decay_iters = 6000
+min_lr = 6e-5
 grad_clip = 1.0
 
 #Model parameters
@@ -104,7 +104,7 @@ torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
 
 #Data loading
-data_dir = 'data'
+data_dir = '/Users/zhouchaoran/Desktop/APT/data'
 def get_batch(split):
     #Recreate memmap each time to prevent memory leak
     if split == 'train':
@@ -294,7 +294,7 @@ while True:
             "lr": lr,
             "mfu": running_mfu*100,
         }
-        logger.log_step(training_metrics, step_type="training", master_process=master_process)
+        # logger.log_step(training_metrics, step_type="training", master_process=master_process)
     iter_num += 1
     local_iter_num += 1
 

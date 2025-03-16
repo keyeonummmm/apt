@@ -4,6 +4,9 @@ import pickle
 from contextlib import nullcontext
 import tiktoken
 from model import GPTConfig, GPT
+import signal
+import time
+import sys
 
 init_from ='resume' # resume from an out_dir, or a gpt2 variant (e.g. 'gpt-2')
 out_dir = 'out-apt' # ignored if init_from is not 'resume'
@@ -80,9 +83,19 @@ if start.startswith('FILE:'):
 start_ids = encode(start)
 x = (torch.tensor(start_ids, dtype=torch.long, device=device)[None, ...])
 
+# Add signal handler before model generation
+def signal_handler(sig, frame):
+    print('\nExiting gracefully...')
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+
+# Replace the final generation loop with:
+print("Generating output every 5 seconds. Press Ctrl+C to exit.")
 with torch.no_grad():
     with ctx:
-        for k in range(num_samples):
+        while True:
             y = model.generate(x, max_new_tokens, temperature=temperature, top_k=top_k)
             print(decode(y[0].tolist()))
-            print('---------------')
+            print('------------------------------------------------------------')
+            time.sleep(5)

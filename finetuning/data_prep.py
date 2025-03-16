@@ -8,9 +8,9 @@ data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
 os.makedirs(data_dir, exist_ok=True)
 
 # Load the dataset
-input_file_path = os.path.join(os.path.dirname(__file__), '/Users/zhouchaoran/Desktop/APT/one.txt')
+input_file_path = os.path.join(os.path.dirname(__file__), '/Users/zhouchaoran/Desktop/APT/one.1.txt')
 if not os.path.exists(input_file_path):
-    data_url = 'https://raw.githubusercontent.com/keyeonummmm/apt/master/one.txt'
+    data_url = 'https://raw.githubusercontent.com/keyeonummmm/apt/master/one.1.txt'
     with open(input_file_path, 'w', encoding='UTF-8') as f:
         f.write(requests.get(data_url).text)
 
