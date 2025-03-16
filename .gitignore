@@ -7,3 +7,5 @@
 /nanogpt
 /small
 test.py
+/finetuning/out-apt/
+/fresh_env
