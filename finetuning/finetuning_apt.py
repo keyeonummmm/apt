@@ -177,7 +177,7 @@ if ddp:
 def get_lr(iter_num):
     # Linear warmup
     if iter_num < warmup_iters:
-        return learning_rate * iter_num / warmup_iters
+        return learning_rate * (iter_num + 1) / (warmup_iters + 1)
     # Cosine decay
     if iter_num > lr_decay_iters:
         return min_lr
