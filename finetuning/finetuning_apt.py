@@ -45,7 +45,7 @@ always_save_checkpoint = False
 # Current setup: 32,768 tokens/iter means ~29 iters/epoch
 # Modified for 3-5 epochs of training
 gradient_accumulation_steps = 32
-max_iters = 6000
+max_iters = 1000
 learning_rate = 6e-4
 decay_lr = True
 warmup_iters = 600
@@ -208,7 +208,7 @@ def estimate_loss():
     return out
 
 # Initialize tracking variables before training loop
-best_val_loss = float('inf')
+best_train_loss = float('inf')
 X, Y = get_batch('train')
 t0 = time.time()
 local_iter_num = 0
@@ -222,7 +222,7 @@ def save_checkpoint():
         'optimizer': optimizer.state_dict(),
         'model_args': model_args,
         'iter_num': iter_num,
-        'best_val_loss': best_val_loss,
+        'best_train_loss': best_train_loss,
         'config': config,
     }
     print(f"saving checkpoint to {out_dir}")
@@ -251,8 +251,8 @@ while True:
         }
         logger.log_step(eval_metrics, step_type="eval", master_process=master_process)
         
-        if losses['val'] < best_val_loss or always_save_checkpoint:
-            best_val_loss = losses['val']
+        if losses['train'] < best_train_loss or always_save_checkpoint:
+            best_train_loss = losses['train']
             if iter_num > 0:
                 save_checkpoint()
 
