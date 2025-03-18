@@ -49,7 +49,7 @@ max_iters = 1600
 learning_rate = 6e-4
 decay_lr = True
 warmup_iters = 600
-lr_decay_iters = 6000
+lr_decay_iters = 1000
 min_lr = 6e-5
 grad_clip = 1.0
 
