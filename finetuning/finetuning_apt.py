@@ -45,7 +45,7 @@ always_save_checkpoint = False
 # Current setup: 32,768 tokens/iter means ~29 iters/epoch
 # Modified for 3-5 epochs of training
 gradient_accumulation_steps = 32
-max_iters = 1000
+max_iters = 1600
 learning_rate = 6e-4
 decay_lr = True
 warmup_iters = 600
