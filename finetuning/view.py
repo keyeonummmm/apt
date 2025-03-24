@@ -114,11 +114,11 @@ class MainWindow(QMainWindow):
         # Set window style with white background
         self.setStyleSheet("""
             QMainWindow {
-                background-color: #ffffff;
+                background-color: #000000;
             }
             QTextEdit {
-                background-color: #ffffff;
-                color: #000000;
+                background-color: #000000;
+                color: #ffffff;
                 border: none;
                 selection-background-color: #000000;
                 selection-color: #ffffff;
@@ -126,21 +126,21 @@ class MainWindow(QMainWindow):
                 font-size: 18px;
             }
             QLabel {
-                color: #000000;
-                font-family: 'Menlo';
-                font-size: 12px;
-            }
-            QPushButton {
-                background-color: #ffffff;
-                color: #000000;
-                border: 1px solid #000000;
-                padding: 5px;
-                font-family: 'Menlo';
-                font-size: 12px;
-            }
-            QPushButton:hover {
-                background-color: #000000;
                 color: #ffffff;
+                font-family: 'Menlo';
+                font-size: 12px;
+            }
+            # QPushButton {
+            #     background-color: #000000;
+            #     color: #ffffff;
+            #     border: 1px solid #ffffff;
+            #     padding: 5px;
+            #     font-family: 'Menlo';
+            #     font-size: 12px;
+            # }
+            # QPushButton:hover {
+            #     background-color: #ffffff;
+            #     color: #000000;
             }
         """)
         
@@ -164,10 +164,10 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.text_display)
         
         # Clear button with terminal style
-        self.clear_button = QPushButton("[ Clear Output ]")
-        self.clear_button.clicked.connect(self.clear_output)
-        self.clear_button.setFixedHeight(30)
-        layout.addWidget(self.clear_button)
+        # self.clear_button = QPushButton("[ Clear Output ]")
+        # self.clear_button.clicked.connect(self.clear_output)
+        # self.clear_button.setFixedHeight(30)
+        # layout.addWidget(self.clear_button)
         
         # Start the worker thread
         self.worker = OutputWorker()
